@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Meu Treino</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#EDEFF2;--surface:#fff;--ink:#16181C;--mute:#6A717C;--line:#D9DDE3;--acc:#2450F0;--acc-ink:#fff;--ok:#1E9E5A;--danger:#C93A3A;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171A;--surface:#202328;--ink:#F1F3F5;--mute:#98A0AB;--line:#32363D;--acc:#6B8CFF;--acc-ink:#0B1020;--ok:#3CCB85;--danger:#FF7A7A}}
+:root[data-theme="dark"]{--bg:#15171A;--surface:#202328;--ink:#F1F3F5;--mute:#98A0AB;--line:#32363D;--acc:#6B8CFF;--acc-ink:#0B1020;--ok:#3CCB85;--danger:#FF7A7A}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.4 Barlow,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 48px}
+h1{font:700 34px/1 "Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:.01em;margin:8px 0 14px}
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 16px;font:600 17px "Barlow Condensed","Arial Narrow",sans-serif;cursor:pointer}
+.day.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.day.add{color:var(--acc);border-style:dashed}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--line);border-radius:12px;padding:3px;margin:14px 0}
+.seg button{border:0;background:none;color:var(--mute);padding:10px;border-radius:9px;font:600 16px Barlow,sans-serif;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.prog{margin:0 0 12px}
+.prog .t{display:flex;justify-content:space-between;color:var(--mute);font-size:14px;margin-bottom:6px}
+.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .25s}
+.list{display:flex;flex-direction:column;gap:8px}
+.ex{display:flex;align-items:center;gap:14px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:14px}
+.ex.done{border-color:var(--ok)}
+.ex.done .nm{text-decoration:line-through;color:var(--mute)}
+.chk{flex:none;width:34px;height:34px;border-radius:10px;border:2px solid var(--mute);background:none;color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.chk svg{width:20px;height:20px;opacity:0}
+.done .chk{background:var(--ok);border-color:var(--ok)}
+.done .chk svg{opacity:1}
+.info{flex:1;min-width:0}
+.nm{font-weight:600;font-size:18px;overflow-wrap:anywhere}
+.meta{font:600 20px "Barlow Condensed","Arial Narrow",sans-serif;color:var(--mute);letter-spacing:.02em}
+.meta b{color:var(--ink);font-weight:700}
+.ico{border:0;background:none;color:var(--mute);padding:8px;font:600 14px Barlow,sans-serif;cursor:pointer;border-radius:8px}
+.ico.del{color:var(--danger)}
+form{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+form .full{grid-column:1/-1}
+label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+input{width:100%;font:500 17px Barlow,sans-serif;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;min-width:0}
+input:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.btn{border:0;border-radius:10px;padding:13px;font:600 17px Barlow,sans-serif;cursor:pointer;background:var(--acc);color:var(--acc-ink)}
+.btn.ghost{background:none;color:var(--mute);border:1.5px solid var(--line)}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.empty{text-align:center;color:var(--mute);padding:28px 8px}
+.foot{display:flex;justify-content:space-between;margin-top:18px}
+.foot .ico{padding:10px 4px}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:14px}
+.card.fin{border-color:var(--ok)}
+.hd{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:inherit;text-align:left;padding:0;font:inherit;cursor:pointer}
+.hd .info{flex:1;min-width:0}
+.sub{color:var(--mute);font-size:14px}
+.ring{flex:none;position:relative;width:52px;height:52px}
+.ring svg{width:52px;height:52px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:5}
+.ring .bg{stroke:var(--line)}
+.ring .fg{stroke:var(--ok);stroke-linecap:round;transition:stroke-dashoffset .25s}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font:700 14px Barlow,sans-serif}
+.sets{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1.5px solid var(--line)}
+.set{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:999px;padding:8px 10px 8px 16px}
+.set .n{font:700 20px "Barlow Condensed","Arial Narrow",sans-serif;width:18px}
+.chip{background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;font:600 17px "Barlow Condensed","Arial Narrow",sans-serif;white-space:nowrap}
+.chip input{width:52px;padding:4px 6px;font-size:16px;text-align:center}
+.set .chk{margin-left:auto;border-radius:50%}
+.cardfoot{display:flex;justify-content:space-between;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Meu treino</h1>
+  <div class="days" id="days"></div>
+  <div class="seg" id="seg">
+    <button data-mode="build">Montar</button>
+    <button data-mode="train">Treinar</button>
+  </div>
+  <div id="view"></div>
+</div>
+<script>
+(function(){
+var KEY="meu-treino-v1";
+var S=null;
+function uid(){return Math.random().toString(36).slice(2,9)}
+function load(){
+  try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&o.days&&o.days.length)return o}}catch(e){}
+  var id=uid();return{days:[{id:id,name:"Treino A",ex:[]}],active:id,mode:"build"};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+S=load();
+var editing=null;
+function day(){return S.days.find(function(d){return d.id===S.active})||S.days[0]}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+
+var openEx=null,editSet=null;
+function mk(x,old){var n=Math.min(20,Math.max(1,parseInt(x.s)||1)),a=[];for(var i=0;i<n;i++)a.push({r:x.r,w:x.w,done:!!(old&&old[i]&&old[i].done)});return a}
+function ensure(d){d.ex.forEach(function(x){if(!x.sets||!x.sets.length)x.sets=mk(x)})}
+function openId(d){
+  if(openEx==="none")return null;
+  if(openEx&&d.ex.some(function(x){return x.id===openEx}))return openEx;
+  var f=d.ex.find(function(x){return x.sets.some(function(q){return !q.done})});
+  return f?f.id:null;
+}
+function card(x,o){
+  var n=x.sets.length,dn=x.sets.filter(function(q){return q.done}).length,p=dn/n,C=138.23,ed=editSet===x.id;
+  var h='<div class="card'+(dn===n?' fin':'')+'"><button class="hd" data-act="open" data-id="'+x.id+'" aria-expanded="'+o+'"><span class="info"><span class="nm" style="display:block">'+esc(x.n)+'</span><span class="sub">'+dn+' de '+n+' séries concluídas</span></span><span class="ring"><svg viewBox="0 0 52 52"><circle class="bg" cx="26" cy="26" r="22"/><circle class="fg" cx="26" cy="26" r="22" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-p))+'"/></svg><span>'+Math.round(p*100)+'%</span></span></button>';
+  if(o){
+    h+='<div class="sets">'+x.sets.map(function(q,i){
+      var chips=ed
+        ?'<span class="chip"><input data-f="r" data-id="'+x.id+'" data-i="'+i+'" inputmode="numeric" aria-label="Repetições" value="'+esc(q.r)+'"> rep</span><span class="chip"><input data-f="w" data-id="'+x.id+'" data-i="'+i+'" inputmode="decimal" aria-label="Peso em kg" value="'+esc(q.w)+'"> kg</span>'
+        :'<span class="chip">'+esc(q.r||"–")+' rep</span><span class="chip">'+(q.w!==""&&q.w!=null?esc(q.w)+' kg':'sem carga')+'</span>';
+      return '<div class="set'+(q.done?' done':'')+'"><span class="n">'+(i+1)+'</span>'+chips+'<button class="chk" aria-label="Série '+(i+1)+'" aria-pressed="'+(!!q.done)+'" data-act="tick" data-id="'+x.id+'" data-i="'+i+'">'+CHECK+'</button></div>';
+    }).join("")+'</div><div class="cardfoot"><button class="ico" data-act="editsets" data-id="'+x.id+'">'+(ed?'Terminar edição':'Editar série')+'</button><button class="ico" data-act="all" data-id="'+x.id+'">Concluir todos</button></div>';
+  }
+  return h+'</div>';
+}
+document.addEventListener("change",function(ev){
+  var t=ev.target;if(!t.dataset||!t.dataset.f)return;
+  var x=day().ex.find(function(q){return q.id===t.dataset.id});if(!x)return;
+  var v=t.value.trim();x.sets[+t.dataset.i][t.dataset.f]=t.dataset.f==="w"?v.replace(",","."):v;save();
+});
+function metaHtml(x){
+  var w=x.w!==""&&x.w!=null?' · <b>'+esc(x.w)+'</b> kg':'';
+  return '<b>'+esc(x.s||"–")+'</b> × <b>'+esc(x.r||"–")+'</b>'+w;
+}
+function render(){
+  var d=day();S.active=d.id;
+  document.getElementById("days").innerHTML=S.days.map(function(x){
+    return '<button class="day'+(x.id===d.id?' on':'')+'" data-act="day" data-id="'+x.id+'">'+esc(x.name)+'</button>';
+  }).join("")+'<button class="day add" data-act="newday">+ Treino</button>';
+  document.querySelectorAll("#seg button").forEach(function(b){b.classList.toggle("on",b.dataset.mode===S.mode)});
+  var v=document.getElementById("view"),h="";
+  if(S.mode==="build"){
+    var e=editing?d.ex.find(function(x){return x.id===editing}):null;
+    h+='<form id="f" autocomplete="off"><div class="full"><label for="n">Exercício</label><input id="n" required placeholder="Ex.: Supino reto" value="'+(e?esc(e.n):'')+'"></div>'
+      +'<div><label for="s">Séries</label><input id="s" inputmode="numeric" placeholder="3" value="'+(e?esc(e.s):'')+'"></div>'
+      +'<div><label for="r">Repetições</label><input id="r" inputmode="numeric" placeholder="12" value="'+(e?esc(e.r):'')+'"></div>'
+      +'<div><label for="w">Peso (kg)</label><input id="w" inputmode="decimal" placeholder="40" value="'+(e?esc(e.w):'')+'"></div>'
+      +'<div class="full row"><button class="btn" type="submit">'+(e?'Salvar alterações':'Adicionar exercício')+'</button>'+(e?'<button class="btn ghost" type="button" data-act="cancel">Cancelar</button>':'')+'</div></form>';
+    h+=d.ex.length?'<div class="list">'+d.ex.map(function(x){
+      return '<div class="ex"><div class="info"><div class="nm">'+esc(x.n)+'</div><div class="meta">'+metaHtml(x)+'</div></div>'
+        +'<button class="ico" data-act="edit" data-id="'+x.id+'">Editar</button><button class="ico del" data-act="del" data-id="'+x.id+'">Excluir</button></div>';
+    }).join("")+'</div>':'<div class="empty">Nenhum exercício neste treino. Adicione o primeiro acima.</div>';
+    h+='<div class="foot"><button class="ico" data-act="rename">Renomear treino</button>'+(S.days.length>1?'<button class="ico del" data-act="delday">Excluir treino</button>':'')+'</div>';
+  }else{
+    ensure(d);var tot=d.ex.reduce(function(a,x){return a+x.sets.length},0),done=d.ex.reduce(function(a,x){return a+x.sets.filter(function(q){return q.done}).length},0),op=openId(d);
+    if(!tot){h='<div class="empty">Este treino está vazio. Vá em Montar para adicionar exercícios.</div>'}
+    else{
+      h+='<div class="prog"><div class="t"><span>'+(done===tot?'Treino concluído':done+' de '+tot+' séries feitas')+'</span><span>'+Math.round(done/tot*100)+'%</span></div><div class="bar"><i style="width:'+(done/tot*100)+'%"></i></div></div>';
+      h+='<div class="list">'+d.ex.map(function(x){return card(x,x.id===op)}).join("")+'</div>';
+      h+='<div class="foot"><button class="ico" data-act="reset">Desmarcar todos</button></div>';
+    }
+  }
+  v.innerHTML=h;
+}
+document.addEventListener("click",function(ev){
+  var m=ev.target.closest("#seg button");
+  if(m){S.mode=m.dataset.mode;editing=null;save();render();return}
+  var b=ev.target.closest("[data-act]");if(!b)return;
+  var a=b.dataset.act,d=day(),id=b.dataset.id;
+  if(a==="day"){S.active=id;editing=null}
+  else if(a==="newday"){var nm=prompt("Nome do treino","Treino "+String.fromCharCode(65+S.days.length));if(!nm)return;var nid=uid();S.days.push({id:nid,name:nm.trim(),ex:[]});S.active=nid;S.mode="build"}
+  else if(a==="rename"){var r=prompt("Novo nome",d.name);if(r&&r.trim())d.name=r.trim()}
+  else if(a==="delday"){if(!confirm("Excluir “"+d.name+"” e todos os exercícios?"))return;S.days=S.days.filter(function(x){return x.id!==d.id});S.active=S.days[0].id}
+  else if(a==="edit"){editing=id}
+  else if(a==="cancel"){editing=null}
+  else if(a==="del"){d.ex=d.ex.filter(function(x){return x.id!==id});if(editing===id)editing=null}
+  else if(a==="tick"){var x=d.ex.find(function(q){return q.id===id}),st=x.sets[+b.dataset.i];st.done=!st.done;if(st.done&&x.sets.every(function(q){return q.done})){openEx=null;editSet=null}}
+  else if(a==="open"){openEx=(openId(d)===id)?"none":id;editSet=null}
+  else if(a==="editsets"){editSet=(editSet===id)?null:id}
+  else if(a==="all"){var y=d.ex.find(function(q){return q.id===id});y.sets.forEach(function(q){q.done=true});openEx=null;editSet=null}
+  else if(a==="reset"){d.ex.forEach(function(q){q.sets.forEach(function(s){s.done=false})});openEx=null}
+  save();render();
+});
+document.addEventListener("submit",function(ev){
+  ev.preventDefault();
+  var g=function(i){return document.getElementById(i).value.trim()};
+  var n=g("n");if(!n)return;
+  var d=day(),data={n:n,s:g("s"),r:g("r"),w:g("w").replace(",",".")};
+  if(editing){var x=d.ex.find(function(q){return q.id===editing});Object.assign(x,data);x.sets=mk(x,x.sets);editing=null}
+  else d.ex.push(Object.assign({id:uid(),done:false},data));
+  save();render();
+  var f=document.getElementById("n");if(f)f.focus();
+});
+render();
+})();
+</script>
+</body>
+</html>
