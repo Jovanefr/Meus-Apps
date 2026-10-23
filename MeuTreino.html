@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Treino</title>
+<!-- Biblioteca para arrastar e soltar (Drag and Drop) -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%); color: #f0f0f5; min-height: 100vh; padding: 20px; padding-bottom: 100px; }
+  .container { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; margin-bottom: 24px; color: #ff6b6b; text-align: center; }
+
+  /* ===== TELA DE LOGIN ===== */
+  .login-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 70vh; }
+  .login-card { background: #22223a; padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); text-align: center; }
+  .login-card label { display: block; margin-bottom: 12px; font-size: 1rem; color: #a0a0b0; font-weight: 600; }
+  
+  .custom-select { position: relative; width: 100%; cursor: pointer; }
+  .custom-select-trigger { background: #15152a; border: 1px solid #3a3a55; color: #f0f0f5; padding: 14px 16px; border-radius: 10px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+  .custom-select-trigger:hover { border-color: #ff6b6b; }
+  .custom-select-trigger::after { content: '▼'; font-size: 0.8rem; color: #a0a0b0; }
+  
+  .custom-options { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #22223a; border: 1px solid #3a3a55; border-radius: 10px; margin-top: 8px; overflow: hidden; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .custom-options.show { display: block; }
+  .custom-options div { padding: 14px 16px; font-size: 1.1rem; color: #f0f0f5; transition: 0.2s; text-align: left; }
+  .custom-options div:hover { background: #ff6b6b; color: white; }
+
+  /* ===== TELA DE MENU ===== */
+  .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .menu-header h1 { margin-bottom: 0; text-align: left; font-size: 1.6rem; }
+  .btn-logout { background: transparent; border: 1px solid #3a3a55; color: #a0a0b0; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+  .btn-logout:hover { background: #ff6b6b; border-color: #ff6b6b; color: white; }
+
+  .menu-container { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+  .menu-card { background: #22223a; border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .menu-card:hover { transform: translateY(-4px); border-color: #ff6b6b; background: #2a2a40; }
+  .menu-icon { font-size: 3rem; margin-bottom: 12px; }
+  .menu-card h2 { color: #ff6b6b; font-size: 1.4rem; margin-bottom: 8px; }
+  .menu-card p { color: #a0a0b0; font-size: 0.95rem; }
+
+  /* ===== ESTILOS GERAIS ===== */
+  .card { background: #22223a; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .top-bar { display: flex; align-items: center; margin-bottom: 20px; }
+  .btn-back { background: transparent; border: none; color: #a0a0b0; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 8px; transition: 0.2s; }
+  .btn-back:hover { color: #f0f0f5; background: #22223a; }
+  .page-title { flex: 1; text-align: center; font-size: 1.3rem; color: #ff6b6b; margin-right: 28px; }
+
+  .btn { background: #ff6b6b; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; text-align: center; }
+  .btn:hover { background: #ff5252; transform: translateY(-1px); }
+  .btn-block { width: 100%; display: block; margin-bottom: 16px; }
+  .btn-small { padding: 8px 12px; font-size: 0.85rem; }
+  .btn-ghost { background: transparent; border: 1px solid #3a3a55; color: #f0f0f5; }
+  .btn-ghost:hover { background: #2a2a40; }
+  .btn-danger { background: transparent; color: #ff6b6b; padding: 6px 10px; font-size: 0.9rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; transition: 0.2s; }
+  .btn-danger:hover { background: rgba(255,107,107,0.1); }
+
+  /* ===== LISTA DE TREINOS ===== */
+  .lista-item { display: flex; justify-content: space-between; align-items: center; background: #1a1a30; padding: 16px; border-radius: 10px; margin-bottom: 10px; border: 1px solid transparent; transition: 0.2s; }
+  .lista-item:hover { border-color: #ff6b6b; }
+  .lista-info { cursor: pointer; flex: 1; }
+  .lista-info h3 { font-size: 1.1rem; margin-bottom: 4px; color: #f0f0f5; }
+  .lista-info p { font-size: 0.85rem; color: #a0a0b0; }
+
+  /* ===== EDITAR TREINO ===== */
+  .treino-nome { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .treino-nome input { flex: 1; background: #15152a; border: 1px solid #3a3a55; color: #f0f0f5; padding: 10px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; min-width: 0; }
+  .treino-nome input:focus { outline: none; border-color: #ff6b6b; }
+
+  .add-exercicio { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 16px; }
+  .add-exercicio input { background: #15152a; border: 1px solid #3a3a55; color: #f0f0f5; padding: 10px; border-radius: 8px; font-size: 0.95rem; width: 100%; min-width: 0; }
+  .add-exercicio input:focus { outline: none; border-color: #ff6b6b; }
+  
+  .exercicio { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 12px; background: #1a1a30; border-radius: 10px; margin-bottom: 8px; }
+  .exercicio input { background: #15152a; border: 1px solid #3a3a55; color: #f0f0f5; padding: 8px; border-radius: 6px; width: 100%; min-width: 0; font-size: 0.9rem; }
+  .exercicio input:focus { outline: none; border-color: #ff6b6b; }
+
+  .drag-handle { display: flex; justify-content: center; align-items: center; cursor: grab; color: #6a6a80; font-size: 1.2rem; user-select: none; }
+  .drag-handle:active { cursor: grabbing; color: #ff6b6b; }
+  .sortable-ghost { opacity: 0.3; background: #3a3a55 !important; border: 1px dashed #ff6b6b; }
+
+  /* ===== EXECUÇÃO DE TREINO ===== */
+  .exec-item { background: #1a1a30; padding: 16px; border-radius: 10px; margin-bottom: 16px; border: 1px solid #3a3a55; }
+  .exec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #3a3a55; padding-bottom: 8px; }
+  .exec-header h4 { font-size: 1.1rem; color: #ff6b6b; }
+  .exec-header p { font-size: 0.85rem; color: #a0a0b0; background: #15152a; padding: 4px 8px; border-radius: 4px; }
+  
+  .series-container { display: flex; flex-direction: column; gap: 8px; }
+  .serie-row { display: flex; justify-content: space-between; align-items: center; background: #15152a; border: 1px solid #3a3a55; padding: 10px 14px; border-radius: 8px; transition: 0.2s; flex-wrap: wrap; gap: 8px; }
+  .serie-row:has(input[type="checkbox"]:checked) { border-color: #ff6b6b; background: rgba(255, 107, 107, 0.05); }
+  .serie-label { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; user-select: none; min-width: 90px; }
+  .serie-label input[type="checkbox"] { width: 20px; height: 20px; accent-color: #ff6b6b; cursor: pointer; }
+  .serie-label span { font-size: 0.95rem; font-weight: 600; color: #f0f0f5; transition: 0.2s; }
+  .serie-row:has(input[type="checkbox"]:checked) .serie-label span { text-decoration: line-through; color: #6a6a80; }
+
+  .inputs-group { display: flex; align-items: center; gap: 8px; }
+  .input-group-item { display: flex; align-items: center; gap: 4px; }
+  .input-group-item input { width: 55px; background: #22223a; border: 1px solid #3a3a55; color: #fff; padding: 6px 8px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 0.9rem; }
+  .input-group-item input:focus { outline: none; border-color: #ff6b6b; }
+  .input-group-item span { font-size: 0.8rem; color: #a0a0b0; font-weight: 600; }
+
+  .data-sessao-container { display: flex; align-items: center; justify-content: space-between; background: #15152a; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; border: 1px solid #3a3a55; }
+  .data-sessao-container label { font-size: 0.95rem; color: #f0f0f5; font-weight: 600; }
+  .data-sessao-container input[type="date"] { background: #22223a; border: 1px solid #3a3a55; color: #f0f0f5; padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 0.95rem; outline: none; }
+  .data-sessao-container input[type="date"]:focus { border-color: #ff6b6b; }
+  .data-sessao-container input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+  .empty { text-align: center; padding: 40px 20px; color: #6a6a80; }
+  .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+  /* ===== CRONÔMETRO ===== */
+  #timer-container { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #22223a; border: 2px solid #ff6b6b; color: white; padding: 12px 24px; border-radius: 50px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); align-items: center; gap: 20px; z-index: 1000; animation: slideUp 0.3s ease-out; }
+  @keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
+  #timer-display { font-size: 1.8rem; font-weight: 800; color: #ff6b6b; min-width: 80px; text-align: center; font-variant-numeric: tabular-nums; }
+  #timer-display.alertando { animation: piscar 1s infinite; color: #fff; }
+  @keyframes piscar { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  /* Ajustes finos para telas menores */
+  @media (max-width: 650px) {
+    .add-exercicio { grid-template-columns: 1fr 1fr; }
+    .add-exercicio input:nth-child(1) { grid-column: 1 / -1; }
+    .add-exercicio input:nth-child(5) { grid-column: 1 / -1; }
+    .add-exercicio button { grid-column: 1 / -1; }
+    
+    .exercicio { grid-template-columns: 30px 1fr auto; }
+    .exercicio input[type="text"] { grid-column: 2 / 3; }
+    .exercicio input[type="number"] { grid-column: 2 / 4; }
+    .drag-handle { grid-row: 1 / 5; }
+    .exercicio .btn-danger { grid-column: 3 / 4; grid-row: 1 / 2; }
+    
+    .data-sessao-container { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .data-sessao-container input[type="date"] { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  
+  <!-- TELA: LOGIN -->
+  <div id="view-login">
+    <div class="login-container">
+      <h1 style="margin-bottom: 30px;">💪 Meu Treino</h1>
+      <div class="login-card">
+        <label>Selecione o usuário:</label>
+        <div class="custom-select" onclick="toggleOpcoes(event)">
+          <div class="custom-select-trigger" id="login-trigger">Clique aqui...</div>
+          <div class="custom-options" id="login-options">
+            <div onclick="fazerLogin('Jovane')">Jovane</div>
+            <div onclick="fazerLogin('Thais')">Thais</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA: MENU -->
+  <div id="view-menu" style="display:none;">
+    <div class="menu-header">
+      <h1 id="saudacao-usuario">💪 Olá!</h1>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+    </div>
+    <div class="menu-container">
+      <div class="menu-card" onclick="mudarTela('lista-treinos')">
+        <div class="menu-icon">🏋️‍♂️</div>
+        <h2>Montar Treino</h2>
+        <p>Crie, edite e organize seus treinos</p>
+      </div>
+      <div class="menu-card" onclick="mudarTela('registrar')">
+        <div class="menu-icon">📊</div>
+        <h2>Registrar Sessão</h2>
+        <p>Inicie um treino e salve no histórico</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA: LISTA DE TREINOS -->
+  <div id="view-lista-treinos" style="display:none;">
+    <div class="top-bar">
+      <button class="btn-back" onclick="mudarTela('menu')">← Voltar</button>
+      <div class="page-title">Meus Treinos</div>
+    </div>
+    <button class="btn btn-block" onclick="criarNovoTreino()">+ Criar Novo Treino</button>
+    <div id="lista-treinos-container"></div>
+  </div>
+
+  <!-- TELA: EDITAR TREINO -->
+  <div id="view-editar-treino" style="display:none;">
+    <div class="top-bar">
+      <button class="btn-back" onclick="mudarTela('lista-treinos')">← Voltar</button>
+      <div class="page-title">Editar Treino</div>
+    </div>
+    <div class="card">
+      <div class="treino-nome">
+        <input type="text" id="nomeTreino" placeholder="Nome do treino" oninput="salvarNomeTreino(this.value)">
+      </div>
+      <div class="add-exercicio">
+        <input type="text" id="exNome" placeholder="Exercício">
+        <input type="number" id="exSeries" placeholder="Séries" min="1">
+        <input type="number" id="exReps" placeholder="Reps" min="1">
+        <input type="number" id="exPeso" placeholder="Peso (kg)" min="0" step="0.5">
+        <input type="number" id="exDescanso" placeholder="Desc (s)" min="0" value="60">
+        <button class="btn" onclick="addExercicio()">+</button>
+      </div>
+      <div id="listaExercicios"></div>
+    </div>
+  </div>
+
+  <!-- TELA: REGISTRAR / HISTÓRICO -->
+  <div id="view-registrar" style="display:none;">
+    <div class="top-bar">
+      <button class="btn-back" onclick="mudarTela('menu')">← Voltar</button>
+      <div class="page-title">Registrar Sessão</div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.1rem;color:#ff6b6b;margin-bottom:12px;">Iniciar Treino</h3>
+      <div id="lista-iniciar-container"></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1.1rem;color:#ff6b6b;margin-bottom:12px;">Histórico</h3>
+      <div id="historico"></div>
+    </div>
+  </div>
+
+  <!-- TELA: EXECUTANDO -->
+  <div id="view-executando" style="display:none;">
+    <div class="top-bar">
+      <button class="btn-back" onclick="confirmarSairTreino()">← Sair</button>
+      <div class="page-title" id="exec-titulo">Treino</div>
+    </div>
+    <div class="card">
+      <div class="data-sessao-container">
+        <label for="dataSessao">Data do Treino:</label>
+        <input type="date" id="dataSessao">
+      </div>
+      <p style="color:#a0a0b0;margin-bottom:16px;font-size:0.9rem;">Marque as séries concluídas e ajuste os valores se necessário:</p>
+      <div id="exec-lista"></div>
+      <button class="btn btn-block" style="margin-top:16px;" onclick="finalizarTreino()">Finalizar e Salvar Sessão</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- CRONÔMETRO -->
+<div id="timer-container">
+  <div id="timer-display">00:00</div>
+  <button class="btn btn-ghost btn-small" onclick="pararCronometro()">Pular</button>
+</div>
+
+<script>
+  let estado = { treinos: [], historico: [] };
+  
+  // MUDANÇA AQUI: Força o usuário a ser nulo ao carregar o site
+  let usuarioLogado = null; 
+  
+  let treinoAtivoId = null;
+  let timerInterval;
+  let audioCtx;
+  let sortableInstance = null;
+
+  // ===== LÓGICA DE LOGIN =====
+  function toggleOpcoes(event) {
+    if (event) event.stopPropagation();
+    const options = document.getElementById('login-options');
+    options.classList.toggle('show');
+  }
+
+  document.addEventListener('click', () => {
+    const options = document.getElementById('login-options');
+    if (options) options.classList.remove('show');
+  });
+
+  function fazerLogin(nome) {
+    usuarioLogado = nome;
+    localStorage.setItem('usuarioLogado', nome); // Salva para saber quem está ativo na sessão (opcional)
+    carregarDadosUsuario();
+    mudarTela('menu');
+  }
+
+  function fazerLogout() {
+    localStorage.removeItem('usuarioLogado');
+    usuarioLogado = null;
+    estado = { treinos: [], historico: [] };
+    document.getElementById('login-trigger').innerText = 'Clique aqui...';
+    mudarTela('login');
+  }
+
+  function carregarDadosUsuario() {
+    if (!usuarioLogado) return;
+    const dadosSalvos = localStorage.getItem('meuTreino_' + usuarioLogado);
+    
+    if (dadosSalvos) {
+      estado = JSON.parse(dadosSalvos);
+    } else {
+      estado = { treinos: [], historico: [] };
+      if (usuarioLogado === 'Jovane') {
+        gerarDadosDeTeste();
+      } else {
+        salvar();
+      }
+    }
+    document.getElementById('saudacao-usuario').innerText = `💪 Olá, ${usuarioLogado}!`;
+  }
+
+  function salvar() { 
+    if (usuarioLogado) {
+      localStorage.setItem('meuTreino_' + usuarioLogado, JSON.stringify(estado)); 
+    }
+  }
+
+  // MUDANÇA AQUI: Sempre inicia na tela de login ao abrir o site
+  mudarTela('login');
+
+  // ===== GERADOR DE DADOS DE TESTE =====
+  function gerarDadosDeTeste() {
+    const hoje = new Date();
+    const treinos = [
+      { id: 1, nome: "Treino A - Peito/Tríceps", exercicios: [ { id: 101, nome: "Supino Reto", series: 3, reps: 10, peso: 40, descanso: 60 }, { id: 102, nome: "Crucifixo", series: 3, reps: 12, peso: 15, descanso: 45 } ]},
+      { id: 2, nome: "Treino B - Costas/Bíceps", exercicios: [ { id: 201, nome: "Puxada Frontal", series: 4, reps: 10, peso: 50, descanso: 60 }, { id: 202, nome: "Rosca Direta", series: 3, reps: 10, peso: 15, descanso: 45 } ]},
+      { id: 3, nome: "Treino C - Pernas", exercicios: [ { id: 301, nome: "Agachamento Livre", series: 4, reps: 10, peso: 60, descanso: 90 }, { id: 302, nome: "Leg Press", series: 4, reps: 12, peso: 100, descanso: 60 } ]}
+    ];
+    const historico = [];
+    treinos.forEach(treino => {
+      for (let i = 9; i >= 0; i--) {
+        const dataSessao = new Date(hoje);
+        dataSessao.setDate(hoje.getDate() - (i * 7));
+        const exExec = treino.exercicios.map(ex => {
+          const incremento = i === 9 ? 0 : (9 - i) * 2.5;
+          return { nome: ex.nome, series: Array.from({ length: ex.series }).map(() => ({ concluida: true, peso: ex.peso + incremento, reps: ex.reps })) };
+        });
+        const dia = String(dataSessao.getDate()).padStart(2, '0');
+        const mes = String(dataSessao.getMonth() + 1).padStart(2, '0');
+        const ano = dataSessao.getFullYear();
+        historico.push({ id: Date.now() - (i * 100000) + Math.floor(Math.random()*1000), data: `${dia}/${mes}/${ano} 08:00`, nome: treino.nome, exercicios: exExec });
+      }
+    });
+    historico.sort((a, b) => new Date(b.data.split(' ')[0].split('/').reverse().join('-')) - new Date(a.data.split(' ')[0].split('/').reverse().join('-')));
+    estado.treinos = treinos;
+    estado.historico = historico;
+    salvar();
+  }
+
+  // ===== NAVEGAÇÃO =====
+  function mudarTela(tela) {
+    const views = ['login', 'menu', 'lista-treinos', 'editar-treino', 'registrar', 'executando'];
+    views.forEach(v => document.getElementById(`view-${v}`).style.display = 'none');
+    document.getElementById(`view-${tela}`).style.display = 'block';
+    
+    if (tela === 'lista-treinos') renderListaTreinos();
+    if (tela === 'registrar') { renderListaIniciar(); renderHistorico(); }
+    if (tela === 'editar-treino') renderEditarTreino();
+    if (tela !== 'executando') pararCronometro();
+  }
+
+  // ===== MONTAR TREINO =====
+  function renderListaTreinos() {
+    const container = document.getElementById('lista-treinos-container');
+    if (estado.treinos.length === 0) return container.innerHTML = `<div class="empty"><div class="empty-icon">📁</div><p>Nenhum treino criado ainda.</p></div>`;
+    
+    container.innerHTML = estado.treinos.map(t => `
+      <div class="lista-item">
+        <div class="lista-info" onclick="abrirTreino(${t.id})">
+          <h3>${t.nome}</h3>
+          <p>${t.exercicios.length} exercício(s)</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-small" onclick="abrirTreino(${t.id})">Editar</button>
+          <button class="btn-danger btn-small" onclick="excluirTreino(${t.id})">Excluir</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  
+  function criarNovoTreino() { const novo = { id: Date.now(), nome: `Novo Treino ${estado.treinos.length + 1}`, exercicios: [] }; estado.treinos.push(novo); salvar(); abrirTreino(novo.id); }
+  function abrirTreino(id) { treinoAtivoId = id; mudarTela('editar-treino'); }
+  
+  function excluirTreino(id) {
+    if (!confirm('Tem certeza de que deseja excluir este treino? Esta ação não pode ser desfeita.')) return;
+    estado.treinos = estado.treinos.filter(t => t.id !== id);
+    salvar();
+    renderListaTreinos();
+  }
+
+  function getTreinoAtivo() { return estado.treinos.find(t => t.id === treinoAtivoId); }
+
+  function renderEditarTreino() {
+    const treino = getTreinoAtivo();
+    if (!treino) return;
+    document.getElementById('nomeTreino').value = treino.nome;
+    const lista = document.getElementById('listaExercicios');
+    
+    if (treino.exercicios.length === 0) {
+      lista.innerHTML = `<div class="empty"><div class="empty-icon">🏋️</div><p>Nenhum exercício. Adicione o primeiro!</p></div>`;
+      if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
+      return;
+    }
+
+    lista.innerHTML = treino.exercicios.map(ex => `
+      <div class="exercicio" data-id="${ex.id}">
+        <div class="drag-handle">☰</div>
+        <input type="text" value="${ex.nome}" onchange="editarExercicio(${ex.id}, 'nome', this.value)">
+        <input type="number" value="${ex.series}" onchange="editarExercicio(${ex.id}, 'series', this.value)" min="1" title="Séries">
+        <input type="number" value="${ex.reps}" onchange="editarExercicio(${ex.id}, 'reps', this.value)" min="1" title="Repetições">
+        <input type="number" value="${ex.peso}" onchange="editarExercicio(${ex.id}, 'peso', this.value)" min="0" step="0.5" title="Peso (kg)">
+        <input type="number" value="${ex.descanso || 60}" onchange="editarExercicio(${ex.id}, 'descanso', this.value)" min="0" title="Descanso (s)">
+        <button class="btn-danger" onclick="removerExercicio(${ex.id})">✕</button>
+      </div>
+    `).join('');
+
+    if (sortableInstance) sortableInstance.destroy();
+    
+    sortableInstance = new Sortable(lista, {
+      animation: 150,
+      handle: '.drag-handle',
+      ghostClass: 'sortable-ghost',
+      onEnd: function (evt) {
+        const treino = getTreinoAtivo();
+        const itemArrastado = treino.exercicios.splice(evt.oldIndex, 1)[0];
+        treino.exercicios.splice(evt.newIndex, 0, itemArrastado);
+        salvar();
+        renderEditarTreino();
+      }
+    });
+  }
+
+  function salvarNomeTreino(nome) { const treino = getTreinoAtivo(); if (treino) { treino.nome = nome; salvar(); } }
+  
+  function addExercicio() {
+    const treino = getTreinoAtivo(); if (!treino) return;
+    const nome = document.getElementById('exNome').value.trim();
+    const series = parseInt(document.getElementById('exSeries').value);
+    const reps = parseInt(document.getElementById('exReps').value);
+    const peso = parseFloat(document.getElementById('exPeso').value);
+    const descanso = parseInt(document.getElementById('exDescanso').value) || 60;
+    if (!nome || !series || !reps) { alert('Preencha nome, séries e repetições.'); return; }
+    treino.exercicios.push({ id: Date.now(), nome, series, reps, peso: peso || 0, descanso });
+    salvar(); renderEditarTreino();
+    document.getElementById('exNome').value = ''; document.getElementById('exSeries').value = ''; document.getElementById('exReps').value = ''; document.getElementById('exPeso').value = '';
+    document.getElementById('exNome').focus();
+  }
+  
+  document.querySelectorAll('.add-exercicio input').forEach(input => { input.addEventListener('keypress', e => { if (e.key === 'Enter') addExercicio(); }); });
+  
+  function editarExercicio(id, campo, valor) { const treino = getTreinoAtivo(); const ex = treino.exercicios.find(e => e.id === id); if (!ex) return; ex[campo] = campo === 'nome' ? valor : Number(valor); salvar(); }
+  function removerExercicio(id) { if (!confirm('Remover este exercício?')) return; const treino = getTreinoAtivo(); treino.exercicios = treino.exercicios.filter(e => e.id !== id); salvar(); renderEditarTreino(); }
+
+  // ===== REGISTRAR SESSÃO =====
+  function renderListaIniciar() {
+    const container = document.getElementById('lista-iniciar-container');
+    if (estado.treinos.length === 0) return container.innerHTML = `<p style="color:#a0a0b0;font-size:0.9rem;">Crie um treino primeiro na aba "Montar Treino".</p>`;
+    container.innerHTML = estado.treinos.map(t => `
+      <div class="lista-item" style="cursor:default;">
+        <div class="lista-info"><h3>${t.nome}</h3><p>${t.exercicios.length} exercício(s)</p></div>
+        <button class="btn btn-small" onclick="iniciarExecucao(${t.id})" ${t.exercicios.length === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Iniciar</button>
+      </div>
+    `).join('');
+  }
+
+  function iniciarExecucao(id) {
+    treinoAtivoId = id;
+    const treino = getTreinoAtivo();
+    document.getElementById('exec-titulo').innerText = treino.nome;
+    const lista = document.getElementById('exec-lista');
+    
+    const hoje = new Date();
+    const yyyy = hoje.getFullYear();
+    const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoje.getDate()).padStart(2, '0');
+    document.getElementById('dataSessao').value = `${yyyy}-${mm}-${dd}`;
+
+    lista.innerHTML = treino.exercicios.map(ex => {
+      let seriesHtml = '';
+      for (let i = 1; i <= ex.series; i++) {
+        seriesHtml += `
+          <div class="serie-row" data-ex-id="${ex.id}" data-serie="${i}">
+            <label class="serie-label">
+              <input type="checkbox" class="check-serie" onchange="lidarComCheckbox(this, ${ex.descanso || 60})">
+              <span>Série ${i}</span>
+            </label>
+            <div class="inputs-group">
+              <div class="input-group-item">
+                <input type="number" class="input-reps" value="${ex.reps}" min="1">
+                <span>reps</span>
+              </div>
+              <div class="input-group-item">
+                <input type="number" class="input-peso" value="${ex.peso}" min="0" step="0.5">
+                <span>kg</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      return `<div class="exec-item"><div class="exec-header"><h4>${ex.nome}</h4><p>${ex.series} séries | ${ex.descanso || 60}s</p></div><div class="series-container">${seriesHtml}</div></div>`;
+    }).join('');
+    mudarTela('executando');
+  }
+
+  function confirmarSairTreino() { if (confirm('Deseja sair sem salvar a sessão?')) mudarTela('registrar'); }
+
+  function finalizarTreino() {
+    const treino = getTreinoAtivo();
+    if (!treino) return;
+
+    const dataInput = document.getElementById('dataSessao').value;
+    let dataFormatada = '';
+
+    if (dataInput) {
+      const [ano, mes, dia] = dataInput.split('-');
+      dataFormatada = `${dia}/${mes}/${ano}`;
+    } else {
+      dataFormatada = new Date().toLocaleDateString('pt-BR');
+    }
+
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const dataFinal = `${dataFormatada} ${hora}`;
+
+    const exerciciosExecutados = [];
+    let totalSeriesFeitas = 0;
+
+    treino.exercicios.forEach(ex => {
+      const seriesDoExercicio = [];
+      document.querySelectorAll(`.serie-row[data-ex-id="${ex.id}"]`).forEach(row => {
+        const concluida = row.querySelector('.check-serie').checked;
+        const peso = parseFloat(row.querySelector('.input-peso').value) || 0;
+        const reps = parseInt(row.querySelector('.input-reps').value) || ex.reps;
+        
+        seriesDoExercicio.push({ concluida, peso, reps });
+        if (concluida) totalSeriesFeitas++;
+      });
+      exerciciosExecutados.push({ nome: ex.nome, series: seriesDoExercicio });
+    });
+
+    if (totalSeriesFeitas === 0 && !confirm('Nenhuma série foi marcada. Salvar mesmo assim?')) return;
+
+    estado.historico.unshift({ id: Date.now(), data: dataFinal, nome: treino.nome, exercicios: exerciciosExecutados });
+    salvar();
+    pararCronometro();
+    alert('✅ Sessão registrada com sucesso!');
+    mudarTela('registrar');
+  }
+
+  // ===== HISTÓRICO =====
+  function renderHistorico() {
+    const hist = document.getElementById('historico');
+    if (estado.historico.length === 0) return hist.innerHTML = `<p style="color:#a0a0b0;font-size:0.9rem;">Nenhuma sessão registrada ainda.</p>`;
+    hist.innerHTML = estado.historico.map(s => {
+      const detalhes = s.exercicios.map(e => {
+        if (!e.series || !Array.isArray(e.series)) return `• ${e.nome}: ${e.series}x${e.reps} @ ${e.peso}kg`;
+        const feitas = e.series.filter(x => x.concluida);
+        if (feitas.length === 0) return `• ${e.nome}: <span style="color:#6a6a80;">Nenhuma série</span>`;
+        const detalhesSeries = feitas.map(x => `${x.reps || '?'}rep @ ${x.peso}kg`).join(' | ');
+        return `• ${e.nome}: <strong>${feitas.length}</strong>/${e.series.length} séries<br><span style="font-size:0.8rem;color:#c0c0d0;">${detalhesSeries}</span>`;
+      }).join('<br>');
+      
+      return `
+        <div style="background:#1a1a30;padding:12px;border-radius:10px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <strong>${s.nome}</strong>
+            <span style="color:#ff6b6b;font-weight:600;font-size:0.8rem;">${s.data}</span>
+          </div>
+          <div style="font-size:0.85rem;color:#a0a0b0;line-height: 1.5;">${detalhes}</div>
+          <button class="btn-danger" onclick="removerSessao(${s.id})" style="margin-top:12px;">Excluir</button>
+        </div>
+      `;
+    }).join('');
+  }
+  function removerSessao(id) { if (!confirm('Excluir esta sessão do histórico?')) return; estado.historico = estado.historico.filter(s => s.id !== id); salvar(); renderHistorico(); }
+
+  // ===== CRONÔMETRO =====
+  function lidarComCheckbox(checkbox, tempoDescanso) { if (checkbox.checked) iniciarCronometro(tempoDescanso); }
+  function iniciarCronometro(segundos) {
+    pararCronometro(); if (segundos <= 0) return;
+    let timeLeft = segundos;
+    const display = document.getElementById('timer-display');
+    const container = document.getElementById('timer-container');
+    container.style.display = 'flex'; display.classList.remove('alertando');
+    const updateDisplay = () => { display.innerText = `${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`; };
+    updateDisplay();
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      if (timeLeft < 0) { pararCronometro(); tocarAlarme(); } 
+      else { updateDisplay(); if (timeLeft <= 3 && timeLeft > 0) display.classList.add('alertando'); else display.classList.remove('alertando'); }
+    }, 1000);
+  }
+  function pararCronometro() {
+    clearInterval(timerInterval);
+    const container = document.getElementById('timer-container');
+    const display = document.getElementById('timer-display');
+    if(container) container.style.display = 'none'; if(display) display.classList.remove('alertando');
+  }
+  function tocarAlarme() {
+    if ("vibrate" in navigator) navigator.vibrate([300, 100, 300]);
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.connect(gainNode); gainNode.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+      setTimeout(() => { const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(1100, audioCtx.currentTime); osc2.connect(audioCtx.destination); osc2.start(); osc2.stop(audioCtx.currentTime + 0.3); }, 600);
+    } catch(e) {}
+  }
+</script>
+</body>
+</html>
